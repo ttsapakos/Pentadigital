@@ -8,7 +8,7 @@ public class Hat
   Hat() {
     this.xPos = (int)random(width);
     this.yPos = height;
-    this.velo = (int)random(20) + 10;
+    this.velo = (int)random(10) + 20;
     this.isDead = false;
 
   }
