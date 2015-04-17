@@ -597,25 +597,36 @@ class Hat extends Particle {
 
 class Hand extends Particle {
 
+  int size;
+  
   Hand() {
-    position = new PVector(random(0,SCREEN_WIDTH), random(0,SCREEN_HEIGHT), 0);
-    velocity = new PVector(0,0,0);
+    position = new PVector(random(0,SCREEN_WIDTH), random(SCREEN_HEIGHT-100, SCREEN_HEIGHT+100), 0);
+    velocity = new PVector(0,-20,0);
     acceleration = new PVector(0,0,0);
    
     ttl = HAND_TTL;
+    
+    size = (int)random(3)+4;
+    
   } // end Hand()  
   
+  /*
   Hand(PVector p, PVector v, PVector a) {
     position.set(p);
     velocity.set(v);
     acceleration.set(a);
     ttl = HAND_TTL;
   } // end Hand()
+  */
   
   public void update() {
     // A' = A_g + V*R_air + A
     PVector tempAcceleration = PVector.mult(velocity, AIR_SCALAR);
-    tempAcceleration.add(GRAVITY);
+    //tempAcceleration.add(GRAVITY);
+    
+    PVector thisGrav = new PVector(0., 1., 0.); // FIXME
+    tempAcceleration.add(thisGrav);
+    
     tempAcceleration.add(acceleration); // base acceleration + environment
     velocity.add(tempAcceleration);
     position.add(velocity);
@@ -627,7 +638,7 @@ class Hand extends Particle {
     //fill(color(255,224,189)); //flesh tone
     pushMatrix(); 
     translate(position.x, position.y);
-    shape(hand, -25, -25, 40, 40);
+    shape(hand, -10 * size, -10 * size, 20 * size, 20 * size);
     //ellipse(-25, -25, 40, 40); //placeholder for graphics
     popMatrix();
   } 
