@@ -5,6 +5,9 @@
 // calculate xy as normal xy plane where 0 is the ground, then transform y at draw level to account for processings interpreteation of line scanning
 // (y' = -1*(y-SCREEN_HEIGHT+1))
 
+PShape hat;
+PShape hand;
+
 PVector GRAVITY = new PVector(0,-0.01,0); // Acceleration due to Gravity
 float AIR_SCALAR = (-0.025); // Acceleration due to Air
 
@@ -62,7 +65,7 @@ protected class Spawner<T> {
   
   protected ArrayList<T> children;  // children spawned by Spawner
   
-  protected int tts;
+  protected int tts;  // Time 'til spawn
   
   public Spawner() {
     PMin = new PVector(0, 0, 0);
@@ -134,6 +137,13 @@ protected class RocketSpawner extends Spawner<Rocket> {
   
 }
 
+/*
+Hats at a constant rate
+Slightly different sizes of hats and hands
+Hands about every 10 hats
+Correct hat and hand graphic
+*/
+
 protected class HatSpawner extends Spawner<Hat> {
   
   HatSpawner() {
@@ -159,9 +169,19 @@ protected class HatSpawner extends Spawner<Hat> {
   
   public void update() {
     
+    /*
     while (children.size() < 10) {
       this.spawn();
     }
+    */
+    
+    // This section makes it so that the hats keep spawning
+    tts--;
+    while(tts < 0){
+      this.spawn();
+      tts = 10;
+    }
+    
     ArrayList<Hat> garbage = new ArrayList<Hat>();
     for(Hat h : children) {
       h.update();
@@ -462,6 +482,8 @@ class Hat extends Particle {
 
   float rot;
   float spin;
+  int size; // 4, 5, 6... kinda bad numbers but it works
+  Hand hand;
 
   Hat() {
     position = new PVector(random(0,SCREEN_WIDTH), SCREEN_HEIGHT, 0);
@@ -469,6 +491,8 @@ class Hat extends Particle {
     acceleration = new PVector(0,0,0);
     this.spin = random(-.2f, .2f);
     ttl = HAT_TTL;
+    size = (int)random(3)+4;
+    this.hand = new Hand(position, velocity, acceleration);
   } // end Hat()  
   
   Hat(PVector p, PVector v, PVector a, float spin) {
@@ -477,6 +501,7 @@ class Hat extends Particle {
     acceleration.set(a);
     this.spin = spin;
     ttl = HAT_TTL;
+    hand = new Hand(p, v, a);
   } // end Hat()
   
   public void update() {
@@ -489,18 +514,25 @@ class Hat extends Particle {
     tempAcceleration.add(acceleration); // base acceleration + environment
     velocity.add(tempAcceleration);
     position.add(velocity);
+    hand.update();
   } // end Hat::move()
   
   void draw() {
-    println("okay! position: " + position.x + " " + position.y);
+    
     stroke(0);
     fill(0);
     pushMatrix(); //allows rotation of hat around itself
     translate(position.x, position.y);
     rotate(rot % 360); 
-    rect(-25, -25, 50, 50); //placeholder for graphics
+
+    // actual graphics
+    shape(hat, -10 * size, -10 * size, 20 * size, 20 * size);
+
+    //placeholder for graphics
+    //rect(-25, -25, 50, 50);
+    
     popMatrix();
-    //this.hand.display(); //calls hand display
+    this.hand.draw(); //calls hand draw
   } 
   
 }
@@ -513,23 +545,34 @@ class Hand extends Particle {
     acceleration = new PVector(0,0,0);
    
     ttl = HAND_TTL;
-  } // end Hat()  
+  } // end Hand()  
   
   Hand(PVector p, PVector v, PVector a) {
     position.set(p);
     velocity.set(v);
     acceleration.set(a);
     ttl = HAND_TTL;
-  } // end Hat()
+  } // end Hnd()
   
-  public void move() {
+  public void update() {
     // A' = A_g + V*R_air + A
     PVector tempAcceleration = PVector.mult(velocity, AIR_SCALAR);
     tempAcceleration.add(GRAVITY);
     tempAcceleration.add(acceleration); // base acceleration + environment
     velocity.add(tempAcceleration);
     position.add(velocity);
-  } // end Hat::move()
+  } // end Hand::move()
+  
+  void draw() {
+    println("okay! position: " + position.x + " " + position.y);
+    stroke(0);
+    //fill(color(255,224,189)); //flesh tone
+    pushMatrix(); 
+    translate(position.x, position.y);
+    shape(hand, -25, -25, 40, 40);
+    //ellipse(-25, -25, 40, 40); //placeholder for graphics
+    popMatrix();
+  } 
   
 }
 
@@ -543,6 +586,8 @@ void setup() {
   RS = new RocketSpawner();
   FS = new FlashSpawner();
   HS = new HatSpawner();
+  hand = loadShape("hand-toss.svg");
+  hat = loadShape("hat.svg");
 }
 
 void draw() {
@@ -554,4 +599,8 @@ void draw() {
   
   HS.update();
   HS.draw();
+  
+  // Making sure the hand can be drawn
+  //shape(hand, 100, 100, 100, 100);
+  
 }
