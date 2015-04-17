@@ -561,7 +561,7 @@ class Hand extends Particle {
     tempAcceleration.add(acceleration); // base acceleration + environment
     velocity.add(tempAcceleration);
     position.add(velocity);
-  } // end Hand::move()
+  }
   
   void draw() {
     println("okay! position: " + position.x + " " + position.y);
