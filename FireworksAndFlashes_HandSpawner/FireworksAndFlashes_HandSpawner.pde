@@ -223,13 +223,15 @@ protected class HandSpawner extends Spawner<Hand> {
     PMin.x += random(SCREEN_WIDTH);
     PVector childVel = VMin;
     children.add(new Hand());
+    println(children.size());
   }
   
   public void update() {
     
     // This section makes it so children spawn in bursts
-    while (children.size() < 10) {
+    while (children.size() < 5) {
       this.spawn();
+      
     }
     
     // This section makes it so that the hats keep spawning
@@ -600,7 +602,7 @@ class Hand extends Particle {
   int size;
   
   Hand() {
-    position = new PVector(random(0,SCREEN_WIDTH), random(SCREEN_HEIGHT-100, SCREEN_HEIGHT+100), 0);
+    position = new PVector(random(0,SCREEN_WIDTH), random(SCREEN_HEIGHT+50, SCREEN_HEIGHT+100), 0);
     velocity = new PVector(0,-20,0);
     acceleration = new PVector(0,0,0);
    
@@ -630,10 +632,11 @@ class Hand extends Particle {
     tempAcceleration.add(acceleration); // base acceleration + environment
     velocity.add(tempAcceleration);
     position.add(velocity);
+    ttl--;
   } // end Hand::move()
   
   void draw() {
-    println("okay! position: " + position.x + " " + position.y);
+    //println("okay! position: " + position.x + " " + position.y);
     stroke(0);
     //fill(color(255,224,189)); //flesh tone
     pushMatrix(); 
@@ -653,20 +656,21 @@ HandSpawner HANDS;
 void setup() {
   size(SCREEN_WIDTH,SCREEN_HEIGHT);
   smooth();
-  RS = new RocketSpawner();
-  FS = new FlashSpawner();
+  //RS = new RocketSpawner();
+  //FS = new FlashSpawner();
   HS = new HatSpawner();
   HANDS = new HandSpawner();
   hand = loadShape("hand-toss.svg");
   hat = loadShape("hat.svg");
+  //frameRate(20);
 }
 
 void draw() {
   background(BGCOL);
-  RS.update();
-  RS.draw();
-  FS.update();
-  FS.draw();
+  //RS.update();
+  //RS.draw();
+  //FS.update();
+  //FS.draw();
   
   HS.update();
   HS.draw();
