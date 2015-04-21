@@ -202,6 +202,66 @@ protected class HatSpawner extends Spawner<Hat> {
   
 }
 
+protected class HandSpawner extends Spawner<Hand> {
+  
+  HandSpawner() {
+    PMin = new PVector(0, 1, 0);
+    VMin = new PVector(-50, -50, -50);
+    AMin = new PVector(-10, -10, -10);
+      
+    PMax = new PVector(SCREEN_WIDTH, 1, SCREEN_WIDTH);
+    VMax = new PVector(50, 50, 0);
+    AMax = new PVector(10, 10, 0);
+    
+    children = new ArrayList<Hand>();
+    
+    tts = 0;
+  }
+  
+  public void spawn() {
+    PVector childPos = PMin;
+    PMin.x += random(SCREEN_WIDTH);
+    PVector childVel = VMin;
+    children.add(new Hand());
+    println(children.size());
+  }
+  
+  public void update() {
+    
+    // This section makes it so children spawn in bursts
+    while (children.size() < 5) {
+      this.spawn();
+      
+    }
+    
+    // This section makes it so that the hats keep spawning
+    /*
+    tts--;
+    while(tts < 0){
+      this.spawn();
+      tts = 10;
+    }
+    */
+    
+    ArrayList<Hand> garbage = new ArrayList<Hand>();
+    for(Hand h : children) {
+      h.update();
+      if (h.ttl < 0) {
+        garbage.add(h);
+      }
+    }
+    for (Hand h : garbage) {
+      children.remove(h);
+    }
+  }
+  
+  public void draw() {
+    for(Hand h : children) {
+      h.draw();
+    }
+  }
+}
+
 protected class SparkSpawner extends Spawner<Spark> {
   protected PVector position;
   protected PVector velocity;
@@ -483,7 +543,7 @@ class Hat extends Particle {
   float rot;
   float spin;
   int size; // 4, 5, 6... kinda bad numbers but it works
-  Hand hand;
+  //Hand hand;
 
   Hat() {
     position = new PVector(random(0,SCREEN_WIDTH), SCREEN_HEIGHT, 0);
@@ -492,7 +552,7 @@ class Hat extends Particle {
     this.spin = random(-.2f, .2f);
     ttl = HAT_TTL;
     size = (int)random(3)+4;
-    this.hand = new Hand(position, velocity, acceleration);
+    //this.hand = new Hand(position, velocity, acceleration);
   } // end Hat()  
   
   Hat(PVector p, PVector v, PVector a, float spin) {
@@ -501,7 +561,7 @@ class Hat extends Particle {
     acceleration.set(a);
     this.spin = spin;
     ttl = HAT_TTL;
-    hand = new Hand(p, v, a);
+    //hand = new Hand(p, v, a);
   } // end Hat()
   
   public void update() {
@@ -514,7 +574,7 @@ class Hat extends Particle {
     tempAcceleration.add(acceleration); // base acceleration + environment
     velocity.add(tempAcceleration);
     position.add(velocity);
-    hand.update();
+    //hand.update();
   } // end Hat::move()
   
   void draw() {
@@ -532,44 +592,56 @@ class Hat extends Particle {
     //rect(-25, -25, 50, 50);
     
     popMatrix();
-    this.hand.draw(); //calls hand draw
+    //this.hand.draw(); //calls hand draw
   } 
   
 }
 
 class Hand extends Particle {
 
+  int size;
+  
   Hand() {
-    position = new PVector(random(0,SCREEN_WIDTH), random(0,SCREEN_HEIGHT), 0);
-    velocity = new PVector(0,0,0);
+    position = new PVector(random(0,SCREEN_WIDTH), random(SCREEN_HEIGHT+50, SCREEN_HEIGHT+100), 0);
+    velocity = new PVector(0,-20,0);
     acceleration = new PVector(0,0,0);
    
     ttl = HAND_TTL;
+    
+    size = (int)random(3)+4;
+    
   } // end Hand()  
   
+  /*
   Hand(PVector p, PVector v, PVector a) {
     position.set(p);
     velocity.set(v);
     acceleration.set(a);
     ttl = HAND_TTL;
-  } // end Hnd()
+  } // end Hand()
+  */
   
   public void update() {
     // A' = A_g + V*R_air + A
     PVector tempAcceleration = PVector.mult(velocity, AIR_SCALAR);
-    tempAcceleration.add(GRAVITY);
+    //tempAcceleration.add(GRAVITY);
+    
+    PVector thisGrav = new PVector(0., 1., 0.); // FIXME
+    tempAcceleration.add(thisGrav);
+    
     tempAcceleration.add(acceleration); // base acceleration + environment
     velocity.add(tempAcceleration);
     position.add(velocity);
-  }
+    ttl--;
+  } // end Hand::move()
   
   void draw() {
-    println("okay! position: " + position.x + " " + position.y);
+    //println("okay! position: " + position.x + " " + position.y);
     stroke(0);
     //fill(color(255,224,189)); //flesh tone
     pushMatrix(); 
     translate(position.x, position.y);
-    shape(hand, -25, -25, 40, 40);
+    shape(hand, -10 * size, -10 * size, 20 * size, 20 * size);
     //ellipse(-25, -25, 40, 40); //placeholder for graphics
     popMatrix();
   } 
@@ -579,26 +651,32 @@ class Hand extends Particle {
 RocketSpawner RS;
 FlashSpawner FS;
 HatSpawner HS;
+HandSpawner HANDS;
 
 void setup() {
   size(SCREEN_WIDTH,SCREEN_HEIGHT);
   smooth();
-  RS = new RocketSpawner();
-  FS = new FlashSpawner();
+  //RS = new RocketSpawner();
+  //FS = new FlashSpawner();
   HS = new HatSpawner();
+  HANDS = new HandSpawner();
   hand = loadShape("hand-toss.svg");
   hat = loadShape("hat.svg");
+  //frameRate(20);
 }
 
 void draw() {
   background(BGCOL);
-  RS.update();
-  RS.draw();
-  FS.update();
-  FS.draw();
+  //RS.update();
+  //RS.draw();
+  //FS.update();
+  //FS.draw();
   
   HS.update();
   HS.draw();
+  HANDS.update();
+  HANDS.draw();
+  
   
   // Making sure the hand can be drawn
   //shape(hand, 100, 100, 100, 100);
